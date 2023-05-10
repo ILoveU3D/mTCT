@@ -32,11 +32,11 @@ standardSID: 1000
 standardSDD: 2000
 
 # beijing geometry parameters
-beijingAngleNum: 1080
+beijingAngleNum: 72
 beijingPlanes: 21
 beijingSubDetectorSize:
-  - 40
-  - 72
+  - 80
+  - 144
 beijingVolumeSize:
   - 256
   - 256

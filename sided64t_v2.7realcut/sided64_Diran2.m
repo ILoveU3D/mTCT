@@ -17,8 +17,8 @@ proj_width_single = proj_width_total/detector_num;%单个探测器宽
 proj_height = 288/Binning;%投影图高
 proj_num_total = 72;%投影图角度个数
 proj_num_single = proj_num_total/source_num;%单源角度个数
-nReconWid = 256;%重建图大小
-nReconSlices = 72;%重建图层数,理论计算结果为418层
+nReconWid = 512;%重建图大小
+nReconSlices = 64;%重建图层数,理论计算结果为418层
 
 % 1.2 根据几何放大关系修改XY方向参数
 origin_width = 3072/Binning;
@@ -39,7 +39,7 @@ Z_offset_Dec = Z_offset/dPixelSpacing*(1 - SOD/SID) - tempz;%探测器Z向偏移量
 TablePosition = zeros(proj_num_single,1);%如果TablePosition的值均为0 ，就变成轴扫
 dSliceInterval = (z2 - z1)/nReconSlices;
 
-dSampleInterval = 0.25;
+% dSampleInterval = 1;
 dSliceInterval = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 源s对应的最远探测器d公式为 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,7 +54,6 @@ det_offset = 21.0049 - (proj_width_single-2)*dPixelSpacing/2;
 SouDec_offset = pi + atan(det_offset/(R2*dPixelSpacing));
 souAngle_interval = 2*pi/source_num;
 detAngle_interval = -2*pi/detector_num;
-% projAngle_interval = 2*pi/proj_num_total;
 souAngleInit = zeros(source_num,1);
 detAngleInit = zeros(detector_num,1);
 for i = 1:source_num
@@ -64,14 +63,18 @@ for k = 1:detector_num
     detAngleInit(k) = SouDec_offset + (k-32)*detAngle_interval;
 end
 load("angles.mat", "Angle");
+% Angle = reshape(Angle, [proj_num_single, source_num]);
+Angle = reshape(Angle, [45, source_num]);
+Angle = Angle(1:3,:);
 
 %2.2 构建向量矩阵Proj_vec
 %Proj_vec需要参数( rayX, rayY, rayZ, dX, dY, dZ, uX, uY, uZ, vX, vY, vZ )
 proj_vec = zeros(proj_num_total*21, 12);
 for i = 1:proj_num_single
-    detAngle = detAngleInit + Angle(i);
-    souAngle = souAngleInit + Angle(i);
     for j = 1:source_num
+        dAngle = Angle(i,j) - Angle(1,j);
+        souAngle = souAngleInit(j) + dAngle;
+        detAngle = detAngleInit + dAngle;
         center_detector = source_detectors(j);
         for k = 1:detector_num_cut
             angle_idx = (j-1)*proj_num_single*detector_num_cut + (i-1)*detector_num_cut + k;
@@ -80,8 +83,8 @@ for i = 1:proj_num_single
                 det_idx = detector_num;
             end
             %射线源坐标
-            proj_vec(angle_idx,1) = R1*cos(souAngle(j))/dSampleInterval;
-            proj_vec(angle_idx,2) = R1*sin(souAngle(j))/dSampleInterval;
+            proj_vec(angle_idx,1) = R1*cos(souAngle)/dSampleInterval;
+            proj_vec(angle_idx,2) = R1*sin(souAngle)/dSampleInterval;
             proj_vec(angle_idx,3) = Z_offset_Sou/dSliceInterval + TablePosition(i);
             %探测器中心点坐标
             proj_vec(angle_idx,4) = R2*cos(detAngle(det_idx))/dSampleInterval;
@@ -100,7 +103,7 @@ for i = 1:proj_num_single
 end
 
 projection_matrix = proj_vec;
-save( "projVecSparse.mat", 'projection_matrix');
+save( "projVecReal.mat", 'projection_matrix');
 fprintf("%s\n","Finish!");
 
 

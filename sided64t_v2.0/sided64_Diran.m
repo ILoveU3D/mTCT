@@ -11,7 +11,7 @@ SID = 1143;
 SOD = 708;
 source_num = 24;
 detector_num = 64;
-Binning = 4;
+Binning = 2;
 dPixelSpacing = 0.265*Binning;%探测器像素大小
 R1 = SOD/dPixelSpacing;
 R2 = (SID-SOD)/dPixelSpacing;
@@ -19,7 +19,7 @@ Z_offset = 100;
 proj_width_total = 10240/Binning;%投影图宽
 proj_width_single = proj_width_total/detector_num;%单个探测器宽
 proj_height = 288/Binning;%投影图高
-proj_num_total = 1080;%投影图角度个数
+proj_num_total = 72;%投影图角度个数
 proj_num_single = proj_num_total/source_num;%单源角度个数
 nReconWid = 256;%重建图大小
 nReconSlices = 64;%重建图层数,理论计算结果为418层
@@ -43,8 +43,8 @@ Z_offset_Dec = Z_offset/dPixelSpacing*(1 - SOD/SID) - tempz;%探测器Z向偏移量
 TablePosition = zeros(proj_num_single,1);%如果TablePosition的值均为0 ，就变成轴扫
 dSliceInterval = (z2 - z1)/nReconSlices;
 
-dSampleInterval = 0.25;
-dSliceInterval = 1;
+% dSampleInterval = 0.25;
+% dSliceInterval = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 构建geometry %%%%%%%%%%%%%%%%%%%%%%%%%
 %2.1 假设1号射线源在y轴正半轴(0,708)上，计算与其正对的1号探测器与y轴负半轴的交点
@@ -62,7 +62,7 @@ end
 for k = 1:detector_num
     detAngleInit(mod(k+30, detector_num)+1) = SouDec_offset + (k-1)*detAngle_interval;
 end
-load("angles.mat", "Angle");
+angles = linspace(0,15*pi/180,proj_num_single);
 
 %2.2 构建向量矩阵Proj_vec
 %Proj_vec需要参数( rayX, rayY, rayZ, dX, dY, dZ, uX, uY, uZ, vX, vY, vZ )

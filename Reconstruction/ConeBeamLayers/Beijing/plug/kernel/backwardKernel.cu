@@ -6,7 +6,7 @@
 #define BLOCK_X 16
 #define BLOCK_Y 16
 #define BLOCK_A 180
-#define TEXA (21*1080)
+#define TEXA (21*72)
 #define PI 3.14159265359
 #define CHECK_CUDA(x) AT_ASSERTM(x.type().is_cuda(), #x " must be a CUDA tensor")
 #define CHECK_CONTIGUOUS(x) AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")
@@ -40,7 +40,7 @@ __global__ void backwardKernel(float* volume, const uint3 volumeSize, const uint
             value += tex3D(sinoTexture, detectorX, detectorY, angleIdx%TEXA+0.5f);
         }
         int idx = k * volumeSize.x * volumeSize.y + volumeIdx.y * volumeSize.x + volumeIdx.x;
-        if(found) volume[idx] += value * 2 * PI / anglesNum;
+        if(found) volume[idx] += value;
     }
 }
 
