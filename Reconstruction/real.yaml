@@ -32,14 +32,14 @@ standardSID: 1000
 standardSDD: 2000
 
 # beijing geometry parameters
-beijingAngleNum: 72
+beijingAngleNum: 1080
 beijingPlanes: 21
 beijingSubDetectorSize:
-  - 80
+  - 84
   - 144
 beijingVolumeSize:
-  - 256
-  - 256
+  - 512
+  - 512
   - 64
 beijingParameterRoot: /media/wyk/wyk/beijing/projVecReal.mat
 #beijingParameterRoot: /media/wyk/wyk/beijing/projVecSparse.mat

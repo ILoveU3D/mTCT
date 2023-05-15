@@ -15,7 +15,7 @@ Z_offset = 100;
 proj_width_total = 10240/Binning;%投影图宽
 proj_width_single = proj_width_total/detector_num;%单个探测器宽
 proj_height = 288/Binning;%投影图高
-proj_num_total = 72;%投影图角度个数
+proj_num_total = 1080;%投影图角度个数
 proj_num_single = proj_num_total/source_num;%单源角度个数
 nReconWid = 512;%重建图大小
 nReconSlices = 64;%重建图层数,理论计算结果为418层
@@ -39,7 +39,7 @@ Z_offset_Dec = Z_offset/dPixelSpacing*(1 - SOD/SID) - tempz;%探测器Z向偏移量
 TablePosition = zeros(proj_num_single,1);%如果TablePosition的值均为0 ，就变成轴扫
 dSliceInterval = (z2 - z1)/nReconSlices;
 
-% dSampleInterval = 1;
+dSampleInterval = 1.7;
 dSliceInterval = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 源s对应的最远探测器d公式为 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -63,9 +63,9 @@ for k = 1:detector_num
     detAngleInit(k) = SouDec_offset + (k-32)*detAngle_interval;
 end
 load("angles.mat", "Angle");
-% Angle = reshape(Angle, [proj_num_single, source_num]);
-Angle = reshape(Angle, [45, source_num]);
-Angle = Angle(1:3,:);
+Angle = reshape(Angle, [proj_num_single, source_num]);
+% Angle = reshape(Angle, [45, source_num]);
+% Angle = Angle(1:3,:);
 
 %2.2 构建向量矩阵Proj_vec
 %Proj_vec需要参数( rayX, rayY, rayZ, dX, dY, dZ, uX, uY, uZ, vX, vY, vZ )
