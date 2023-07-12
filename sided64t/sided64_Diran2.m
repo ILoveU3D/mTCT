@@ -2,45 +2,46 @@ clc;clear;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 基本参数 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1.1 常规几何
-SDD = 1150.3;
-SID = 708;
+SID = 1143;
+SOD = 708;
 source_num = 24;
 detector_num = 64;
 detector_num_cut = 21;
 Binning = 2;
+pixelCut = 32;
 dPixelSpacing = 0.265*Binning;%探测器像素大小
-R1 = SID/dPixelSpacing;
-R2 = (SDD-SID)/dPixelSpacing;
-Z_offset = 100;
+R1 = SOD/dPixelSpacing;
+R2 = (SID-SOD)/dPixelSpacing;
+Z_offset = 100- pixelCut/2*dPixelSpacing;
 proj_width_total = 10240/Binning;%投影图宽
 proj_width_single = proj_width_total/detector_num;%单个探测器宽
-proj_height = 288/Binning;%投影图高
+proj_height = (288 - pixelCut)/Binning;%投影图高
 proj_num_total = 1080;%投影图角度个数
 proj_num_single = proj_num_total/source_num;%单源角度个数
-nReconWid = 256;%重建图大小
-nReconSlices = 64;%重建图层数,理论计算结果为418层
+nReconWid = 512;%重建图大小
+nReconSlices = 100;%重建图层数,理论计算结果为418层
 
 % 1.2 根据几何放大关系修改XY方向参数
 origin_width = 3072/Binning;
-theta_dec = origin_width/(2*(SDD-SID)/dPixelSpacing);
-BG = (SDD-SID)/dPixelSpacing*sin(theta_dec);
-AG = (SDD-SID)/dPixelSpacing*cos(theta_dec) + SID/dPixelSpacing;
+theta_dec = origin_width/(2*(SID-SOD)/dPixelSpacing);
+BG = (SID-SOD)/dPixelSpacing*sin(theta_dec);
+AG = (SID-SOD)/dPixelSpacing*cos(theta_dec) + SOD/dPixelSpacing;
 AB = (BG*BG + AG*AG)^0.5;
-dRadiusTemp = BG/AB*SID/dPixelSpacing*2;
+dRadiusTemp = BG/AB*SOD/dPixelSpacing*2;
 dSampleInterval = dRadiusTemp/nReconWid;
 
 % 1.3 根据几何放大关系修改Z方向参数
-z0 = Z_offset/dPixelSpacing*SID/SDD;
-z1 = (SID/dPixelSpacing - dRadiusTemp/2)*(Z_offset/dPixelSpacing - proj_height/2)/(SDD/dPixelSpacing);
-z2 = (SID/dPixelSpacing + dRadiusTemp/2)*(Z_offset/dPixelSpacing + proj_height/2)/(SDD/dPixelSpacing);
+z0 = Z_offset/dPixelSpacing*SOD/SID;
+z1 = (SOD/dPixelSpacing - dRadiusTemp/2)*(Z_offset/dPixelSpacing - proj_height/2)/(SID/dPixelSpacing);
+z2 = (SOD/dPixelSpacing + dRadiusTemp/2)*(Z_offset/dPixelSpacing + proj_height/2)/(SID/dPixelSpacing);
 tempz = (z1+z2)/2 - z0;
-Z_offset_Sou = - Z_offset/dPixelSpacing*SID/SDD - tempz;%射线源Z向偏移量
-Z_offset_Dec = Z_offset/dPixelSpacing*(1 - SID/SDD) - tempz;%探测器Z向偏移量
-TablePosition = zeros(proj_num_single,1);%如果TablePosition的值均为0 ，就变成轴扫
+Z_offset_Sou = - Z_offset/dPixelSpacing*SOD/SID - tempz;%射线源Z向偏移量
+Z_offset_Dec = Z_offset/dPixelSpacing*(1 - SOD/SID) - tempz;%探测器Z向偏移量
+% TablePosition = zeros(proj_num_single,1);%如果TablePosition的值均为0 ，就变成轴扫
 dSliceInterval = (z2 - z1)/nReconSlices;
 
-% dSampleInterval = 3;
-% dSliceInterval = 0.5;
+dSampleInterval = 1.7783;
+dSliceInterval = 3;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 源s对应的最远探测器d公式为 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 get_detector = @(s) mod(round((source_num/2-s+1)*detector_num/source_num), detector_num);
@@ -62,8 +63,10 @@ end
 for k = 1:detector_num
     detAngleInit(k) = SouDec_offset + (k-32)*detAngle_interval;
 end
-load("angles.mat", "Angle");
-Angle = reshape(Angle, [proj_num_single, source_num]);
+load("AngleTableSource.mat", "AngleTableSource");
+AngleTableSource = sortrows(AngleTableSource,[3,1]);
+Angle = reshape(AngleTableSource(:,1), [proj_num_single, source_num]);
+TablePosition = reshape(AngleTableSource(:,2), [proj_num_single, source_num]);
 % Angle = reshape(Angle, [45, source_num]);
 % Angle = Angle(1:3,:);
 
@@ -85,11 +88,11 @@ for i = 1:proj_num_single
             %射线源坐标
             proj_vec(angle_idx,1) = R1*cos(souAngle)/dSampleInterval;
             proj_vec(angle_idx,2) = R1*sin(souAngle)/dSampleInterval;
-            proj_vec(angle_idx,3) = Z_offset_Sou/dSliceInterval + TablePosition(i);
+            proj_vec(angle_idx,3) = Z_offset_Sou/dSliceInterval + TablePosition(i)/dPixelSpacing/dSliceInterval;
             %探测器中心点坐标
             proj_vec(angle_idx,4) = R2*cos(detAngle(det_idx))/dSampleInterval;
             proj_vec(angle_idx,5) = R2*sin(detAngle(det_idx))/dSampleInterval;
-            proj_vec(angle_idx,6) = Z_offset_Dec/dSliceInterval + TablePosition(i);
+            proj_vec(angle_idx,6) = Z_offset_Dec/dSliceInterval + TablePosition(i)/dPixelSpacing/dSliceInterval;
             %探测器像素(0,0)->(0,1)方向向量
             proj_vec(angle_idx,7) = 0;
             proj_vec(angle_idx,8) = 0;
