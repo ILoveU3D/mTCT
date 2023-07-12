@@ -35,7 +35,7 @@ __global__ void backwardKernel(float* volume, const uint3 volumeSize, const uint
             float detectorX = fScale * det3(coordinates-sourcePosition,v,sourcePosition-detectorPosition)-detectorCenter.x;
             float detectorY = fScale * det3(u, coordinates-sourcePosition,sourcePosition-detectorPosition)-detectorCenter.y;
             float fr = fScale * det3(u, v, sourcePosition-detectorPosition);
-            if(detectorX < -1 || detectorX > volumeSize.x+1 || detectorY < -1 || detectorY > volumeSize.y+1) continue;
+            if(detectorX < -1 || detectorX > detectorSize.x+1 || detectorY < -1 || detectorY > detectorSize.y+1) continue;
             else found = true;
             value += tex3D(sinoTexture, detectorX, detectorY, angleIdx%TEXA+0.5f);
         }

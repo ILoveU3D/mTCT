@@ -35,11 +35,11 @@ standardSDD: 2000
 beijingAngleNum: 1080
 beijingPlanes: 21
 beijingSubDetectorSize:
-  - 84
+  - 82
   - 144
 beijingVolumeSize:
-  - 512
-  - 512
+  - 256
+  - 256
   - 64
 beijingParameterRoot: /media/wyk/wyk/beijing/projVecReal.mat
 #beijingParameterRoot: /media/wyk/wyk/beijing/projVecSparse.mat

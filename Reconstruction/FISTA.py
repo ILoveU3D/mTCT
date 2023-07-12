@@ -7,9 +7,9 @@ class Ista():
     def __init__(self, cascades:int=30, debug:bool=False):
         self.cascades = cascades
         self.debug = debug
-        self.lamb = 0
+        self.lamb = 0.1
         self.L = 1e-4
-        self.t = 0
+        self.t = 0.85
 
     def run(self, image, sino):
         t = 1
